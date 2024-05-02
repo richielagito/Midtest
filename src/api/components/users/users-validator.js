@@ -1,5 +1,6 @@
 const joi = require('joi');
 const { joiPasswordExtendCore } = require('joi-password');
+const { paginatedUsers } = require('./users-repository');
 const joiPassword = joi.extend(joiPasswordExtendCore);
 
 module.exports = {
@@ -19,7 +20,7 @@ module.exports = {
         .max(32)
         .required()
         .label('Password'),
-      password_confirm: joi.string().required().label('Password confirmation'),
+      password_confirm: joi.string().required().label('password_confirmation'),
     },
   },
 
@@ -46,6 +47,15 @@ module.exports = {
         .required()
         .label('New password'),
       password_confirm: joi.string().required().label('Password confirmation'),
+    },
+  },
+
+  paginatedUsers: {
+    query: {
+      page_number: joi.number().integer().positive().label('page_number'),
+      page_size: joi.number().integer().positive().label('page_size'),
+      sort: joi.string().optional().label('sort'),
+      search: joi.string().optional().label('search'),
     },
   },
 };

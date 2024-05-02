@@ -81,6 +81,27 @@ async function changePassword(id, password) {
   return User.updateOne({ _id: id }, { $set: { password } });
 }
 
+/**
+ * Pagination dan Filter
+ * @param {integer} skip
+ * @param {integer} limit
+ * @param {object} sortBy
+ * @param {string} filterBy
+ * @returns {Promise}
+ */
+async function paginatedUsers(skip, limit, sortBy, filterBy) {
+  return User.find(filterBy).sort(sortBy).skip(skip).limit(limit).exec();
+}
+
+/**
+ * Count users based on filter
+ * @param {object} filterBy
+ * @returns {Promise} Total count of users
+ */
+async function countUsers(filterBy) {
+  return User.countDocuments(filterBy);
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -89,4 +110,6 @@ module.exports = {
   deleteUser,
   getUserByEmail,
   changePassword,
+  paginatedUsers,
+  countUsers,
 };

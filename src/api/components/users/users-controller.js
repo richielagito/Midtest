@@ -189,6 +189,40 @@ async function changePassword(request, response, next) {
   }
 }
 
+/**
+ * Pagination dan Filter
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function paginationAndFilterUsers(request, response, next) {
+  try {
+    const pageNumber = parseInt(request.query.page_number);
+    const pageSize = parseInt(request.query.page_size);
+    const sort = request.query.sort || 'email:asc';
+    const search = request.query.search || ''; // default kosong jika tidak diisi
+
+    const users = await usersService.getPaginatedUsers(
+      pageNumber,
+      pageSize,
+      sort,
+      search
+    );
+
+    if (!users) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to load users'
+      );
+    }
+
+    return response.status(200).json(users);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -196,4 +230,5 @@ module.exports = {
   updateUser,
   deleteUser,
   changePassword,
+  paginationAndFilterUsers,
 };

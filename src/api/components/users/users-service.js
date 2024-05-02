@@ -1,5 +1,7 @@
+const { User } = require('../../../models');
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
+const { filter } = require('lodash');
 
 /**
  * Get list of users
@@ -161,6 +163,73 @@ async function changePassword(userId, password) {
   return true;
 }
 
+/**
+ * Pagination dan Filter
+ * @param {integer} pageNumber
+ * @param {integer} pageSize
+ * @param {string} sort
+ * @param {string} search
+ * @returns {Object}
+ */
+async function getPaginatedUsers(pageNumber, pageSize, sort, search) {
+  const skip = (pageNumber - 1) * pageSize;
+
+  const splitSort = sort.split(':');
+  const sortOrder =
+    splitSort[1] === 'asc' ? 1 : splitSort[1] === 'desc' ? -1 : 1;
+  const sortBy =
+    splitSort[0] === 'email'
+      ? { email: sortOrder }
+      : splitSort[0] === 'name'
+        ? { name: sortOrder }
+        : { email: 1 };
+
+  const limit = pageSize;
+
+  const splitSearch = search.split(':');
+  const filterBy = !search
+    ? {}
+    : splitSearch[0] === 'email'
+      ? { email: { $regex: splitSearch[1], $options: 'i' } }
+      : splitSearch[0] === 'name'
+        ? { name: { $regex: splitSearch[1], $options: 'i' } }
+        : { email: { $regex: splitSearch[1], $options: 'i' } };
+
+  const totalUsers = await usersRepository.countUsers(filterBy);
+  const totalPages = Math.ceil(totalUsers / pageSize);
+
+  const users = await usersRepository.paginatedUsers(
+    skip,
+    limit,
+    sortBy,
+    filterBy
+  );
+
+  if (!users) {
+    return null;
+  }
+
+  const data = [];
+  for (let i = 0; i < users.length; i += 1) {
+    const user = users[i];
+    data.push({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
+  }
+
+  return {
+    page_number: pageNumber,
+    page_size: pageSize,
+    count: users.length,
+    total_pages: totalPages,
+    has_previous_page: pageNumber > 1,
+    has_next_page: pageNumber < totalPages,
+    data: data,
+  };
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -170,4 +239,5 @@ module.exports = {
   emailIsRegistered,
   checkPassword,
   changePassword,
+  getPaginatedUsers,
 };

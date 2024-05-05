@@ -2,6 +2,8 @@ const authenticationRepository = require('./authentication-repository');
 const { generateToken } = require('../../../utils/session-token');
 const { passwordMatched } = require('../../../utils/password');
 
+const hasLoginAttempts = {};
+
 /**
  * Check username and password for login.
  * @param {string} email - Email
@@ -21,6 +23,7 @@ async function checkLoginCredentials(email, password) {
   // Because we always check the password (see above comment), we define the
   // login attempt as successful when the `user` is found (by email) and
   // the password matches.
+
   if (user && passwordChecked) {
     return {
       email: user.email,
@@ -28,6 +31,23 @@ async function checkLoginCredentials(email, password) {
       user_id: user.id,
       token: generateToken(user.email, user.id),
     };
+  } else {
+    // mengecek apakah sudah pernah melakukan attempt login sebelumnya
+    if (!hasLoginAttempts[email]) {
+      hasLoginAttempts[email] = { attempts: 1, lastAttempt: new Date() };
+    } else {
+      const currentTime = new Date();
+      const lastAttemptTime = new Date(hasLoginAttempts[email].lastAttempt);
+      const timeDifference =
+        Math.abs(currentTime - lastAttemptTime) / (1000 * 60);
+      // mereset attempt login jika sudah lewat 30 menit
+      if (timeDifference > 30) {
+        hasLoginAttempts[email] = { attempts: 1, lastAttempt: new Date() };
+      } else {
+        hasLoginAttempts[email].attempts++;
+        hasLoginAttempts[email].lastAttempt = new Date();
+      }
+    }
   }
 
   return null;
@@ -35,4 +55,5 @@ async function checkLoginCredentials(email, password) {
 
 module.exports = {
   checkLoginCredentials,
+  hasLoginAttempts,
 };

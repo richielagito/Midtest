@@ -10,7 +10,7 @@ const route = express.Router();
 module.exports = (app) => {
   app.use('/users', route);
 
-  // Get list of users
+  // Get list of users with pagination and filters
   route.get(
     '/',
     authenticationMiddleware,

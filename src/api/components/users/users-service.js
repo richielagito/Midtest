@@ -175,8 +175,11 @@ async function getPaginatedUsers(pageNumber, pageSize, sort, search) {
   const skip = (pageNumber - 1) * pageSize;
 
   const splitSort = sort.split(':');
+  // jika yang diinput asc return 1, jika yang diinput desc return -1, dengan default asc
   const sortOrder =
     splitSort[1] === 'asc' ? 1 : splitSort[1] === 'desc' ? -1 : 1;
+
+  // sorting berdasarkan input user (email/name), dengan default email: 1(asc)
   const sortBy =
     splitSort[0] === 'email'
       ? { email: sortOrder }
@@ -184,17 +187,19 @@ async function getPaginatedUsers(pageNumber, pageSize, sort, search) {
         ? { name: sortOrder }
         : { email: 1 };
 
+  // set limit berdasarkan pageSize yang diinput user
   const limit = pageSize;
 
   const splitSearch = search.split(':');
-  const filterBy = !search
-    ? {}
-    : splitSearch[0] === 'email'
+  // filter data berdasarkan input user (email/name), dengan default semua data akan ditampilkan
+  const filterBy =
+    splitSearch[0] === 'email'
       ? { email: { $regex: splitSearch[1], $options: 'i' } }
       : splitSearch[0] === 'name'
         ? { name: { $regex: splitSearch[1], $options: 'i' } }
-        : { email: { $regex: splitSearch[1], $options: 'i' } };
+        : {};
 
+  // menghitung total users dan total pages
   const totalUsers = await usersRepository.countUsers(filterBy);
   const totalPages = Math.ceil(totalUsers / pageSize);
 
@@ -205,10 +210,12 @@ async function getPaginatedUsers(pageNumber, pageSize, sort, search) {
     filterBy
   );
 
+  // return null jika user tidak ditemukan
   if (!users) {
     return null;
   }
 
+  // push data user ke dalam array data
   const data = [];
   for (let i = 0; i < users.length; i += 1) {
     const user = users[i];
@@ -220,8 +227,8 @@ async function getPaginatedUsers(pageNumber, pageSize, sort, search) {
   }
 
   return {
-    page_number: pageNumber,
-    page_size: pageSize,
+    page_number: pageNumber || 1,
+    page_size: pageSize || users.length,
     count: users.length,
     total_pages: totalPages,
     has_previous_page: pageNumber > 1,

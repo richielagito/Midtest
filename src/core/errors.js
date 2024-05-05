@@ -124,6 +124,11 @@ const errorTypes = {
     status: 409,
     code: 'EMAIL_ALREADY_TAKEN_ERROR',
   },
+  PRODUCT_NAME_ALREADY_TAKEN: {
+    description: 'This product name is already taken, try use another',
+    status: 409,
+    code: 'NAME_ALREADY_TAKEN_ERROR',
+  },
   SEND_EMAIL: {
     description: 'Send email error',
     status: 500,

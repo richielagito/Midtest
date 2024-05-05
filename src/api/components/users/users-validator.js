@@ -1,6 +1,5 @@
 const joi = require('joi');
 const { joiPasswordExtendCore } = require('joi-password');
-const { paginatedUsers } = require('./users-repository');
 const joiPassword = joi.extend(joiPasswordExtendCore);
 
 module.exports = {

@@ -200,8 +200,8 @@ async function paginationAndFilterUsers(request, response, next) {
   try {
     const pageNumber = parseInt(request.query.page_number);
     const pageSize = parseInt(request.query.page_size);
-    const sort = request.query.sort;
-    const search = request.query.search;
+    const sort = request.query.sort || 'email:asc';
+    const search = request.query.search || '';
 
     const users = await usersService.getPaginatedUsers(
       pageNumber,

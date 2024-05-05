@@ -1,7 +1,5 @@
-const { User } = require('../../../models');
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
-const { filter } = require('lodash');
 
 /**
  * Get list of users
